@@ -1,57 +1,74 @@
-TWITTER THREAD DRAFT — Spout Finance beta review
-(post as a thread; add the repo link in the last post)
+X THREAD — FINAL DRAFT (all posts under 280 chars; suggested image in [brackets])
+================================================================================
 
 1/
-I spent 4 days inside @SpoutFinance's beta — every endpoint, every flow, and real signed transactions with my own wallet.
+I spent 4 days inside @SpoutFinance's beta — every endpoint, every flow, real signed transactions with my own wallet.
 
-Borrow stablecoins at 0% against tokenized US equities, powered by covered calls. Clever engine.
+The pitch: borrow at 0% against tokenized US equities, funded by covered calls. Clever engine.
 
-But I now own a receipt for $4 of stock that was never delivered. 🧵
+But their app told me "You own 0.01 GOOG" — and my wallet held zero. 🧵
+
+[IMAGE: screenshots/purchase-confirmed-modal.png]
 
 2/
-The mechanism is genuinely well-designed: tokenized shares custodied at Alpaca, an options desk writes covered calls on the pool, and the volatility premium pays lenders (9–32% APY) while making borrowing free.
+The mechanism is genuinely well-designed: tokenized shares custodied at Alpaca, an options desk writes covered calls on the pool, and the volatility premium pays lenders 9–32% APY while borrowing stays free.
 
 Docs disclose the loss waterfall plainly. More honest than most DeFi. Credit where due.
 
 3/
 But the flagship promise doesn't survive contact with the mechanics: "never trigger a taxable sale."
 
-The docs themselves say assigned covered calls SELL your shares at the strike. That's a sale. That's a taxable event. Auto-Roll rebuys as a new tax lot.
+Their own docs say assigned calls SELL your shares at the strike. That's a sale. That's a taxable event. Auto-Roll rebuys as a new tax lot.
 
-Both things can't be true. Fix the headline, not the mechanic.
+Both can't be true. Fix the headline, not the mechanic.
 
 4/
-The bigger issue is operational. Over the weekend, the price keeper silently died. For ~53 hours, EVERY on-chain action reverted — I know because I signed three transactions and watched them all fail with OraclePriceStale.
+Over the weekend, the price keeper silently died. For ~53 hours every on-chain action reverted — I signed 3 transactions and watched all fail: OraclePriceStale.
 
-Meanwhile the UI showed "Market: Open" with live prices and an enabled buy button.
+Meanwhile the UI showed "Market: Open", live prices, enabled buy button. Nothing worked. The banner is client-side; it can't see the chain.
 
 5/
-That banner is computed client-side. It cannot see the chain. "Market: Open" meant the stock market was open — not that Spout could execute.
+Tuesday the keeper recovered. I bought $4 of GOOG through the real UI. Confirmed on-chain. USDC escrowed.
 
-If this happens on mainnet during a drawdown, positions can't be liquidated OR defended.
+The modal said: "fills at 9:30 AM ET, 22 Sep."
+
+It's now the 23rd. Still pending — 34h past their own promise. $4 in limbo, canceling costs a fee, and the pending-order backlog grew 145 → 268 in a day.
+
+[IMAGE: screenshots/evidence-order-pending.png]
 
 6/
-Tuesday the keeper recovered. I immediately did a real buy through the UI: $4 USDC → GOOG, confirmed on-chain, USDC escrowed.
+The same modal also said "Your purchase has been confirmed. You own 0.01 GOOG."
 
-It's been 18+ hours. The order never filled. No status, no ETA — and canceling my own stuck order costs a fee.
+My wallet: zero GOOG.
 
-Pending-order backlog grew 145 → 268 in a day. Nobody's watching the fulfiller either.
+"You own" is a false statement at the moment of highest user trust. If fills fail or price moves, that's a support nightmare waiting to happen.
 
 7/
 Smaller footguns found along the way:
-• a $1 limit price on a $353 stock passes preflight with zero warnings — funds lock forever
-• no rate limiting on transaction-build endpoints
-• the leverage slider performs an invisible loan without saying "borrow" or "debt" once
-• "no margin calls" sits directly above a liquidation engine
+• a $1 limit price on a $335 stock passes preflight with zero warnings — funds lock forever
+• no rate limiting on tx-build endpoints
+• an unauthenticated endpoint leaks any wallet's KYC status
+• the leverage slider opens a loan without saying debt, loan, or collateral once
+
+[IMAGE: screenshots/evidence-limit-price.png or evidence-kyc-onboard.png]
 
 8/
-What's genuinely good: the vault preflight layer is best-in-class — plain-language blockers with reasons AND remedies. Health Factor surfaced. Proof-of-reserves inline at purchase. Security headers tight, signature boundary holds, server simulates before relaying.
+What's genuinely good: the vault preflight layer is best-in-class — plain-language blockers with reasons AND remedies. Proof-of-reserves inline at purchase. Declining a signature gives an honest toast, not a raw RPC error. Signature boundary holds; nothing funds-reachable found.
 
-Fix the keeper/fulfiller monitoring and sync the marketing with the mechanics, and this is a defensible product.
+The API layer knows the truth. The UI needs to catch up.
 
 9/9
-Full teardown — mechanism analysis, on-chain verification, UX audit, testing logs, three signed-tx receipts:
+Full teardown — mechanism analysis, on-chain receipts, UX audit, annotated evidence captures:
 
 📄 https://github.com/lpsmurf/spout-finance-beta-review
+📊 https://spout-review-control-room.vercel.app
 
-Built as a product-feedback submission for the @SuperteamEarn bounty. Independent testing, not investment advice.
+Submission for the @SuperteamEarn product-feedback bounty. Independent testing, not investment advice.
+
+================================================================================
+POSTING NOTES
+- Post 1 image: purchase-confirmed-modal.png (the hook)
+- Post 5 image: evidence-order-pending.png (the receipt)
+- Post 7 image: evidence-limit-price.png (or kyc-onboard — your pick)
+- After posting, paste the thread URL into the bounty's "Tweet Link" field
+- Repo + dashboard links are both included in 9/9
