@@ -24,7 +24,7 @@ real signed transactions, and direct probing of every public API surface.
    keeper outage, three signed transactions reverting `OraclePriceStale (6013)`,
    and the subsequent successful `$4 GOOG` buy (`PlaceBuyOrder` confirmed
    on-chain, order still pending 18h later at time of writing).
-5. **[screenshots/](screenshots/)** — buy page, borrow page, settings/KYC.
+5. **[screenshots/](screenshots/)** — UI captures (buy panel incl. leverage slider + declined-signature toast, the "You own 0.01 GOOG / fills at 9:30 AM ET, 22 Sep" confirmation modal, borrow page, settings/KYC) and annotated live-API evidence captures (global orders feed, our 34h-pending order, the $1-limit-price acceptance, the unauthenticated KYC endpoint).
 
 ## Headline findings
 

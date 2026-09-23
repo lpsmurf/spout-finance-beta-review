@@ -13,7 +13,7 @@
 
 ### Critical findings
 1. **No state in which the task can complete** — market-open + stale oracle = every tx reverts; the app never communicates this (the one true blocker is invisible).
-2. **The 1.0x–2.0x leverage slider on Buy silently performs the borrow** — a user buying "just some stock" at 1.5x has opened a 0% loan they may never have intended (or vice versa: a user who wants to borrow may never find the Borrow tab, since buy-with-leverage accomplishes it invisibly).
+2. **The 1.0x–2.0x leverage slider on Buy performs a borrow it doesn't explain** — the panel does show an "Amount / Stocks borrowed" line and "Est. borrower cost/yr", but the slider never says "debt"/"loan"/"collateral" and shows no Health Factor. A user buying "just some stock" at 1.5x has opened a 0% loan they may never have intended (or vice versa: a user who wants to borrow may never find the Borrow tab, since buy-with-leverage accomplishes it invisibly).
 3. **Nothing anywhere in the flow discloses covered-call assignment** — the mechanic that can sell your collateral is absent from buy, borrow, and confirmation surfaces.
 
 ---
@@ -57,7 +57,7 @@
 | # | Point | Severity | Fix |
 |---|-------|----------|-----|
 | 1 | Task impossible while oracle stale; app shows "Market: Open" + enabled Buy | **P0** | Global degraded banner + disable signing paths when `priceStale` |
-| 2 | Leverage slider performs a loan without ever saying "borrow/debt/collateral" | Sev 3 | Rename to "Borrow to buy" mode or require explicit opt-in; show HF inline |
+| 2 | Leverage slider performs a loan; "borrowed" appears only as a small line item — no "debt/loan/collateral" wording, no HF at the decision point | Sev 3 | Rename to "Borrow to buy" mode or require explicit opt-in; show HF inline |
 | 3 | Assignment/auto-buyback undisclosed anywhere in the flow | Sev 4 | One-time acknowledgment + cycle-status on position card |
 | 4 | "Market: Closed" informs but doesn't prevent doomed signatures | Sev 3 | Disable Buy or gate it behind "queue for open" copy |
 | 5 | Raw `0x177d` / "Blockhash not found" reach the user unmapped | Sev 3 | Error-map layer (trade path especially) |

@@ -65,7 +65,7 @@ footer{margin-top:56px;color:var(--mut);font-size:12.5px}
     <div class="kpi"><b>4d</b><span>testing window</span></div>
     <div class="kpi"><b>4</b><span>signed devnet txs</span></div>
     <div class="kpi"><b>~53h</b><span>oracle-keeper outage observed</span></div>
-    <div class="kpi"><b>18h+</b><span>confirmed order, never filled</span></div>
+    <div class="kpi"><b>34h+</b><span>confirmed order, never filled (UI promised next-open fill)</span></div>
     <div class="kpi"><b>9</b><span>medium-severity findings</span></div>
     <div class="kpi"><b>0</b><span>funds-reachable issues</span></div>
   </div>
@@ -77,7 +77,7 @@ footer{margin-top:56px;color:var(--mut);font-size:12.5px}
     <div><time>Sep 19–20</time><p>Docs + public-surface analysis; claims-vs-mechanics review; on-chain program map (<code>SPoRX</code> orders, <code>spva</code> vault, freeze router, TACL).</p></div>
     <div><time>Sep 21</time><p>All 10 oracle feeds 52h+ stale. Three Phantom-signed buy txs revert <code>OraclePriceStale (6013)</code> — including one signed while the UI showed "Market: Open". Keeper-down confirmed; every user path bricked.</p></div>
     <div><time>Sep 22</time><p>Keeper recovers (feeds 49–274s fresh). Real $4 USDC → GOOG buy through production UI confirms on-chain (<code>PlaceBuyOrder</code>, price 353.314). Tokens never delivered; pending-order backlog 145 → 268. Extended probe matrix: limit-price footgun, no rate limiting, <code>/api/kyc/onboard</code> live + unauthenticated.</p></div>
-    <div><time>Sep 23</time><p>Delta audit (order still pending), proofread &amp; published submission repo.</p></div>
+    <div><time>Sep 23</time><p>Order still pending — 34h past the UI's own "fills at 9:30 AM ET, 22 Sep" promise. Delta audit: nothing fixed in 24h; proofread &amp; published submission repo + this dashboard.</p></div>
   </div>
 </section>
 
@@ -86,7 +86,7 @@ footer{margin-top:56px;color:var(--mut);font-size:12.5px}
   <div class="card"><table>
     <tr><th style="width:64px">Sev</th><th>Finding</th><th style="width:130px">Status</th></tr>
     <tr><td><span class="pill p0">P0</span></td><td><b>Silent keeper outage bricked every flow for ~53h.</b> Signed buys reverted <code>OraclePriceStale</code>; borrow/withdraw hard-blocked; "Market: Open" banner is client-side and cannot reflect chain state. Resolved 09-22 — reads as ops failure, not a market-hours guard.</td><td><span class="open">open · monitoring fix needed</span></td></tr>
-    <tr><td><span class="pill med">MED</span></td><td><b>Fulfillment never delivered.</b> On-chain-confirmed $4 GOOG buy pending 18h+; USDC escrowed; no status, no ETA, cancel costs <code>0.004 USDC</code>; backlog grew 145 → 268 in a day.</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b>Fulfillment missed its own promise.</b> Modal said <em>"fills at 9:30 AM ET, 22 Sep"</em> — still pending 34h later; the same modal claimed <em>"You own 0.01 GOOG"</em> while the wallet held zero. No status/ETA updates; cancel costs <code>0.004 USDC</code>; backlog 145 → 268 in a day.</td><td><span class="open">open</span></td></tr>
     <tr><td><span class="pill med">MED</span></td><td><b><code>limitPrice</code> accepted at absurd values silently</b> — $1 limit on a $353 asset passes preflight with zero warnings; locks funds into an unfillable order with a fee to exit.</td><td><span class="open">open</span></td></tr>
     <tr><td><span class="pill med">MED</span></td><td><b>No rate limiting.</b> 15 rapid tx-build calls all 200 (each burns RPC quota); <code>redeem_beta_code</code> identical — 8-char codes brute-forceable.</td><td><span class="open">open</span></td></tr>
     <tr><td><span class="pill med">MED</span></td><td><b><code>/api/kyc/onboard</code> live and unauthenticated</b> — KYC-status oracle for arbitrary wallets (defeats the Privy gate on <code>/api/kyc/status</code>); likely burns Persona inquiries for non-onboarded addresses.</td><td><span class="open">open</span></td></tr>
@@ -105,7 +105,7 @@ footer{margin-top:56px;color:var(--mut);font-size:12.5px}
     <tr><td><span class="pill p0">KEY</span></td><td><b>"Never trigger a taxable sale" contradicts the assignment mechanic.</b> Docs: ITM calls sell your shares at strike → taxable event; Auto-Roll rebuys as a new tax lot. Assignment disclosed nowhere in buy/borrow/confirm/settings.</td><td>by design · fix the story</td></tr>
     <tr><td><span class="pill med">MED</span></td><td><b>Lender yield is a levered short-vol position.</b> ~32% Junior APY rests on a healthy-vol premium assumption; thin insurance fund ($50–100k seed vs $200k target — docs disagree) in front of Senior.</td><td>analysis</td></tr>
     <tr><td><span class="pill med">MED</span></td><td><b>Market-hours oracle gap</b> — 9:30–4 ET pricing vs 24/7 liquidation engine; observed live as a weekend-long outage.</td><td><span class="open">needs documentation</span></td></tr>
-    <tr><td><span class="pill med">MED</span></td><td><b>Leverage slider = invisible loan</b> — 1.0–2.0x performs a borrow without saying "borrow" or "debt"; Health Factor absent at the leverage decision point. "No margin calls" sits above a liquidation engine.</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b>Leverage slider performs an unexplained loan</b> — "Stocks borrowed" appears only as a small line item; no "debt"/"loan"/"collateral" wording, no Health Factor at the decision point. "No margin calls" sits above a liquidation engine.</td><td><span class="open">open</span></td></tr>
     <tr><td><span class="pill low">LOW</span></td><td>Permissioned (KYC'd) liquidator set — thinner liquidation depth; unnamed auditor, no bug-bounty; FinCEN MSB ≠ securities clearance; single-broker concentration.</td><td>analysis</td></tr>
     <tr><td><span class="pill low">LOW</span></td><td>Polish: empty portfolio shows phantom P&amp;L (+$0.60); all instrument logos render as Pfizer; <code>autoBuyback</code> toggle unreachable pre-position.</td><td><span class="open">open</span></td></tr>
   </table></div>
@@ -122,7 +122,28 @@ footer{margin-top:56px;color:var(--mut);font-size:12.5px}
     <tr><td><span class="pill good">PASS</span> <b>Security headers</b></td><td>tight CSP with connect-src allowlist, XFO DENY, nosniff, referrer-policy</td></tr>
     <tr><td><span class="pill good">PASS</span> <b>Vault blocker copy</b></td><td>plain-language reasons + remedies for every blocked action — the standard the trade path should meet</td></tr>
     <tr><td><span class="pill good">PASS</span> <b>Proof of reserves inline</b></td><td>"Reserves 100.2%" at the point of purchase; HF label on Borrow; email verification enforced</td></tr>
+    <tr><td><span class="pill good">PASS</span> <b>Honest error UX</b></td><td>declined signature → clean toast ("nothing was submitted"), no raw RPC errors on that path; "Market: Closed" pill with live countdown</td></tr>
   </table></div>
+</section>
+
+<section>
+  <h2>UI evidence</h2>
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+    <figure class="kpi" style="padding:10px"><a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/screenshots/purchase-confirmed-modal.png"><img style="width:100%;border-radius:8px" src="https://raw.githubusercontent.com/lpsmurf/spout-finance-beta-review/main/screenshots/purchase-confirmed-modal.png" alt="purchase confirmed modal"></a><span><b>"You own 0.01 GOOG"</b> — asserted while wallet held zero; fill promise "9:30 AM ET, 22 Sep" missed by 34h+</span></figure>
+    <figure class="kpi" style="padding:10px"><a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/screenshots/buy-market-closed-panel.png"><img style="width:100%;border-radius:8px" src="https://raw.githubusercontent.com/lpsmurf/spout-finance-beta-review/main/screenshots/buy-market-closed-panel.png" alt="buy panel market closed"></a><span>Market-closed pill + countdown (good); leverage slider 1.0–2.0x with no HF; declined-signature toast (good)</span></figure>
+    <figure class="kpi" style="padding:10px"><a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/screenshots/borrow-page.png"><img style="width:100%;border-radius:8px" src="https://raw.githubusercontent.com/lpsmurf/spout-finance-beta-review/main/screenshots/borrow-page.png" alt="borrow page"></a><span>Borrow empty state — plain-language blockers, HF renders as "—" pre-position</span></figure>
+    <figure class="kpi" style="padding:10px"><a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/screenshots/settings-kyc.png"><img style="width:100%;border-radius:8px" src="https://raw.githubusercontent.com/lpsmurf/spout-finance-beta-review/main/screenshots/settings-kyc.png" alt="settings KYC"></a><span>Settings — "KYC verified on-chain"; preferences show no assignment/autoBuyback control</span></figure>
+  </div>
+</section>
+
+<section>
+  <h2>API evidence captures <span style="text-transform:none;color:var(--mut)">(live responses, annotated)</span></h2>
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+    <figure class="kpi" style="padding:10px"><a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/screenshots/evidence-orders-feed.png"><img style="width:100%;border-radius:8px" src="https://raw.githubusercontent.com/lpsmurf/spout-finance-beta-review/main/screenshots/evidence-orders-feed.png" alt="orders feed"></a><span>Unauthenticated global orders feed — 268 orders / 52 wallets</span></figure>
+    <figure class="kpi" style="padding:10px"><a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/screenshots/evidence-order-pending.png"><img style="width:100%;border-radius:8px" src="https://raw.githubusercontent.com/lpsmurf/spout-finance-beta-review/main/screenshots/evidence-order-pending.png" alt="pending order"></a><span>Our order pending 34h — in the public feed, tokens never delivered</span></figure>
+    <figure class="kpi" style="padding:10px"><a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/screenshots/evidence-limit-price.png"><img style="width:100%;border-radius:8px" src="https://raw.githubusercontent.com/lpsmurf/spout-finance-beta-review/main/screenshots/evidence-limit-price.png" alt="limit price"></a><span>$1 limit on a $335 stock → ok:true, zero warnings</span></figure>
+    <figure class="kpi" style="padding:10px"><a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/screenshots/evidence-kyc-onboard.png"><img style="width:100%;border-radius:8px" src="https://raw.githubusercontent.com/lpsmurf/spout-finance-beta-review/main/screenshots/evidence-kyc-onboard.png" alt="kyc onboard"></a><span>Unauthenticated KYC-status oracle for arbitrary wallets</span></figure>
+  </div>
 </section>
 
 <section>
