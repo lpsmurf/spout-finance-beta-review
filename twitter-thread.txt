@@ -1,74 +1,75 @@
-X THREAD — FINAL DRAFT (all posts under 280 chars; suggested image in [brackets])
-================================================================================
+X THREAD — FINAL (every post ≤280 chars, verified)
+==================================================
 
-1/
-I spent 4 days inside @SpoutFinance's beta — every endpoint, every flow, real signed transactions with my own wallet.
+1/10
+4 days inside @SpoutFinance's beta: every endpoint, every flow, real signed transactions with my own wallet.
 
-The pitch: borrow at 0% against tokenized US equities, funded by covered calls. Clever engine.
+Pitch: borrow at 0% against tokenized US stocks, funded by covered calls. Clever engine.
 
-But their app told me "You own 0.01 GOOG" — and my wallet held zero. 🧵
+Until their app said "You own 0.01 GOOG" and my wallet held zero. 🧵
 
 [IMAGE: screenshots/purchase-confirmed-modal.png]
 
-2/
-The mechanism is genuinely well-designed: tokenized shares custodied at Alpaca, an options desk writes covered calls on the pool, and the volatility premium pays lenders 9–32% APY while borrowing stays free.
+2/10
+The mechanism is well-designed: tokenized shares custodied at Alpaca, an options desk writes covered calls on the pool, and the volatility premium pays lenders 9–32% APY while borrowing stays free.
 
-Docs disclose the loss waterfall plainly. More honest than most DeFi. Credit where due.
+Docs disclose the loss waterfall plainly. More honest than most DeFi.
 
-3/
-But the flagship promise doesn't survive contact with the mechanics: "never trigger a taxable sale."
+3/10
+The flagship promise doesn't survive its own mechanics: "never trigger a taxable sale."
 
-Their own docs say assigned calls SELL your shares at the strike. That's a sale. That's a taxable event. Auto-Roll rebuys as a new tax lot.
+Their docs: assigned calls SELL your shares at the strike. A sale. A taxable event. Auto-Roll rebuys as a new tax lot.
 
 Both can't be true. Fix the headline, not the mechanic.
 
-4/
-Over the weekend, the price keeper silently died. For ~53 hours every on-chain action reverted — I signed 3 transactions and watched all fail: OraclePriceStale.
+4/10
+Over the weekend the price keeper silently died. ~53 hours: every on-chain action reverted. I signed 3 transactions and watched all fail — OraclePriceStale.
 
-Meanwhile the UI showed "Market: Open", live prices, enabled buy button. Nothing worked. The banner is client-side; it can't see the chain.
+Meanwhile: "Market: Open", live prices, enabled buy button. The banner is client-side. It can't see the chain.
 
-5/
-Tuesday the keeper recovered. I bought $4 of GOOG through the real UI. Confirmed on-chain. USDC escrowed.
+5/10
+Tuesday the keeper recovered. I bought $4 of GOOG through the real UI — confirmed on-chain, USDC escrowed.
 
-The modal said: "fills at 9:30 AM ET, 22 Sep."
+The modal promised: "fills at 9:30 AM ET, 22 Sep."
 
-It's now the 23rd. Still pending — 34h past their own promise. $4 in limbo, canceling costs a fee, and the pending-order backlog grew 145 → 268 in a day.
+It's now the 23rd. Still pending: 34h past their own promise. Canceling my stuck order costs a fee.
 
 [IMAGE: screenshots/evidence-order-pending.png]
 
-6/
-The same modal also said "Your purchase has been confirmed. You own 0.01 GOOG."
+6/10
+Not just me: the pending backlog grew 145 → 268 in a day. Nothing is clearing.
 
-My wallet: zero GOOG.
+And the modal had already declared victory: "Your purchase has been confirmed. You own 0.01 GOOG."
 
-"You own" is a false statement at the moment of highest user trust. If fills fail or price moves, that's a support nightmare waiting to happen.
+Wallet: zero GOOG. "You own" is false at the highest-trust moment.
 
-7/
-Smaller footguns found along the way:
-• a $1 limit price on a $335 stock passes preflight with zero warnings — funds lock forever
-• no rate limiting on tx-build endpoints
+7/10
+Smaller footguns:
+• a $1 limit price on a $335 stock passes preflight with zero warnings — funds lock permanently
+• no rate limiting on the tx-build endpoints
 • an unauthenticated endpoint leaks any wallet's KYC status
-• the leverage slider opens a loan without saying debt, loan, or collateral once
 
-[IMAGE: screenshots/evidence-limit-price.png or evidence-kyc-onboard.png]
+[IMAGE: screenshots/evidence-limit-price.png]
 
-8/
-What's genuinely good: the vault preflight layer is best-in-class — plain-language blockers with reasons AND remedies. Proof-of-reserves inline at purchase. Declining a signature gives an honest toast, not a raw RPC error. Signature boundary holds; nothing funds-reachable found.
+8/10
+The leverage slider opens a loan (1.0–2.0x) without saying "debt", "loan", or "collateral" once — and no Health Factor at the decision point.
 
-The API layer knows the truth. The UI needs to catch up.
+Meanwhile the marketing says "no margin calls"… directly above a liquidation engine.
 
-9/9
-Full teardown — mechanism analysis, on-chain receipts, UX audit, annotated evidence captures:
+9/10
+Genuinely good: vault preflights give plain-language blockers with reasons AND remedies. Proof-of-reserves inline at purchase. Declining a signature gives an honest toast.
 
-📄 https://github.com/lpsmurf/spout-finance-beta-review
-📊 https://spout-review-control-room.vercel.app
+The API layer knows the truth — the UI needs to catch up. Signature boundary holds.
 
-Submission for the @SuperteamEarn product-feedback bounty. Independent testing, not investment advice.
+10/10
+Full teardown — mechanism, on-chain receipts, UX audit, evidence:
 
-================================================================================
+📄 github.com/lpsmurf/spout-finance-beta-review
+📊 spout-review-control-room.vercel.app
+
+@SuperteamEarn bounty entry. Independent testing.
+
+==================================================
 POSTING NOTES
-- Post 1 image: purchase-confirmed-modal.png (the hook)
-- Post 5 image: evidence-order-pending.png (the receipt)
-- Post 7 image: evidence-limit-price.png (or kyc-onboard — your pick)
-- After posting, paste the thread URL into the bounty's "Tweet Link" field
-- Repo + dashboard links are both included in 9/9
+- Attach purchase-confirmed-modal.png to 1/10, evidence-order-pending.png to 5/10, evidence-limit-price.png to 7/10
+- After posting: paste the thread URL into the bounty's "Tweet Link" field
