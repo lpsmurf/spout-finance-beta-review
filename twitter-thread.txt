@@ -1,0 +1,57 @@
+TWITTER THREAD DRAFT — Spout Finance beta review
+(post as a thread; add the repo link in the last post)
+
+1/
+I spent 4 days inside @SpoutFinance's beta — every endpoint, every flow, and real signed transactions with my own wallet.
+
+Borrow stablecoins at 0% against tokenized US equities, powered by covered calls. Clever engine.
+
+But I now own a receipt for $4 of stock that was never delivered. 🧵
+
+2/
+The mechanism is genuinely well-designed: tokenized shares custodied at Alpaca, an options desk writes covered calls on the pool, and the volatility premium pays lenders (9–32% APY) while making borrowing free.
+
+Docs disclose the loss waterfall plainly. More honest than most DeFi. Credit where due.
+
+3/
+But the flagship promise doesn't survive contact with the mechanics: "never trigger a taxable sale."
+
+The docs themselves say assigned covered calls SELL your shares at the strike. That's a sale. That's a taxable event. Auto-Roll rebuys as a new tax lot.
+
+Both things can't be true. Fix the headline, not the mechanic.
+
+4/
+The bigger issue is operational. Over the weekend, the price keeper silently died. For ~53 hours, EVERY on-chain action reverted — I know because I signed three transactions and watched them all fail with OraclePriceStale.
+
+Meanwhile the UI showed "Market: Open" with live prices and an enabled buy button.
+
+5/
+That banner is computed client-side. It cannot see the chain. "Market: Open" meant the stock market was open — not that Spout could execute.
+
+If this happens on mainnet during a drawdown, positions can't be liquidated OR defended.
+
+6/
+Tuesday the keeper recovered. I immediately did a real buy through the UI: $4 USDC → GOOG, confirmed on-chain, USDC escrowed.
+
+It's been 18+ hours. The order never filled. No status, no ETA — and canceling my own stuck order costs a fee.
+
+Pending-order backlog grew 145 → 268 in a day. Nobody's watching the fulfiller either.
+
+7/
+Smaller footguns found along the way:
+• a $1 limit price on a $353 stock passes preflight with zero warnings — funds lock forever
+• no rate limiting on transaction-build endpoints
+• the leverage slider performs an invisible loan without saying "borrow" or "debt" once
+• "no margin calls" sits directly above a liquidation engine
+
+8/
+What's genuinely good: the vault preflight layer is best-in-class — plain-language blockers with reasons AND remedies. Health Factor surfaced. Proof-of-reserves inline at purchase. Security headers tight, signature boundary holds, server simulates before relaying.
+
+Fix the keeper/fulfiller monitoring and sync the marketing with the mechanics, and this is a defensible product.
+
+9/9
+Full teardown — mechanism analysis, on-chain verification, UX audit, testing logs, three signed-tx receipts:
+
+📄 https://github.com/lpsmurf/spout-finance-beta-review
+
+Built as a product-feedback submission for the @SuperteamEarn bounty. Independent testing, not investment advice.
