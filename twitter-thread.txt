@@ -1,14 +1,18 @@
-X POST — SINGLE-TWEET VERSION (non-Premium, 267 chars X-counted)
+X POST — SINGLE-TWEET VERSION (non-Premium, 273 chars X-counted)
 ================================================================
-Attach: screenshots/purchase-confirmed-modal.png (the "You own 0.01 GOOG" modal)
+Tone: positive/general. Attach any screenshot (suggest purchase-confirmed-modal.png).
 
-4 days in @SpoutFi's beta with real signed txs. Their app said "You own 0.01 GOOG" — wallet held zero. Promised fill passed 34h ago, still pending. Teardown: 53h silent oracle outage, the "never taxable" contradiction, the genuinely good parts
+Just finished 4 days testing @SpoutFi's beta — real wallet, signed txs, every flow. 0% borrowing against tokenized stocks, powered by covered-call premium: genuinely clever. Docs are honest, vault UX is a model for the space. Full report + evidence:
 github.com/lpsmurf/spout-finance-beta-review
 
 After posting: paste the tweet URL into the bounty's "Tweet Link" field.
-(X shortens the URL via t.co to ~23 chars, so the full GitHub link is fine — no shortener needed.)
+(X shortens links via t.co to ~23 chars, so the full URL is fine.)
 
-================================================================
+Punchier alternative if you want one hook finding in there (269 chars):
+
+4 days in @SpoutFi's beta with real signed txs. The 0%-borrow/covered-call design is clever, docs unusually honest, vault UX best-in-class — and I've got stories (a 53h silent outage, an order that never filled). Full report + evidence:
+github.com/lpsmurf/spout-finance-beta-review
+
 THREAD VERSION (if you upgrade to Premium / want the long form)
 
 
