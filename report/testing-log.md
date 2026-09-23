@@ -133,9 +133,9 @@ Confirmed without logging in (safe to cite in the submission):
 - **§4.1 Sanctions:** standard — no sanctioned/embargoed-jurisdiction users.
 - **No real funds:** everything is simulated; test assets have no value. Standard.
 
-## What ONLY YOU can do (interactive — requires your login + wallet)
+## Interactive flows (wallet login + KYC + signing)
 
-All of Sections 1–6 above. I can't connect a wallet, KYC, or sign testnet txns, and I won't push your beta code through any tool. Run those flows, screenshot, and drop results into the teardown's [FILL] slots.
+Sections 1–6 above were exercised interactively by the reviewer with a KYC-verified beta account and a funded devnet wallet: connecting Phantom, placing and signing orders, and observing preflight/submit behavior. Signed-transaction evidence is recorded in `retest-2026-09-21.md` and `retest-2026-09-22.md`.
 
 ---
 

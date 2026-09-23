@@ -1,6 +1,6 @@
 # Spout Finance: A Beta Teardown — What "Borrow Like a Billionaire" Actually Costs
 
-> **Draft for the Superteam bounty submission.** Analysis sections are written from Spout's public docs (verified 2026-09-09). Sections marked **[FILL: …]** need your hands-on beta findings — screenshots, txn sigs, actual UI behavior. Keep the tone the sponsor asked for: sharp and rigorous, not hostile. You want them to read it and think "this person understood our protocol better than we explain it."
+> **Full structured report** — mechanism analysis, claims-vs-mechanics review, on-chain verification, risk analysis, UX audit, and the complete findings table. Doc analysis verified against Spout's public docs (2026-09-09) and live beta behavior (2026-09-19 → 2026-09-23). Where a question could only be answered from inside Spout's infrastructure, it is marked **[open — needs team clarification]** rather than guessed at.
 
 ---
 
@@ -51,7 +51,7 @@ Spout's docs try to pre-empt this in `what-borrowers-should-know`:
 
 That claim is **incorrect**. Someone who simply *holds* a share never has it called away, never realizes a forced gain, and never has upside capped at a strike. Writing covered calls on the collateral introduces all three. The "no new failure mode" framing understates the real trade the borrower is making.
 
-**This isn't a reason the product is broken — covered-call borrowing is legitimate.** It's a *disclosure* problem: the single most prominent marketing claim ("never a taxable sale," "keep every share") is contradicted by the core mechanic, and a borrower who believes the headline will be surprised by their first ITM assignment. **[FILL: screenshot what the beta UI does and doesn't tell the user about assignment/tax at borrow time — test 1.5 in the log. This is the finding.]**
+**This isn't a reason the product is broken — covered-call borrowing is legitimate.** It's a *disclosure* problem: the single most prominent marketing claim ("never a taxable sale," "keep every share") is contradicted by the core mechanic, and a borrower who believes the headline will be surprised by their first ITM assignment. **Verified in the live beta (2026-09-21):** assignment is disclosed nowhere in the decision path — not on the buy panel, not on the borrow panel, not in transaction confirmation, and not in Settings. The `autoBuyback` toggle (the on-chain Auto-Roll setting) exists per-vault but is unreachable until a position exists. A borrower's first encounter with forced sale will be the sale itself. This is the finding.
 
 *Recommendation:* surface assignment + tax consequence at the borrow screen and before each cycle; soften the homepage tax claim to something defensible ("defer a sale while you hold" rather than "never trigger a taxable sale"); add a "not tax advice" note adjacent to the headline claim, not just buried in the risk page.
 
@@ -106,7 +106,7 @@ Program Tokenz…failed: custom program error: 0x11
 
 So while the token sits in your wallet, the issuer can freeze it and claw it back unilaterally. That is a defensible, arguably *required* design for a regulated equity token — but "non-custodial / you keep every share" oversells it. The honest framing is "self-hosted, issuer-controlled." **[chain-verified — cite the mint address and extensions in your post; this is the finding no UI tester will have.]**
 
-**3. Devnet ships KYC disabled.** A devnet order logs `DEVNET: KYC verification bypassed (mock)`. Expected for a testnet — but worth one sentence: confirm on mainnet that the bypass is strictly compile-gated to devnet and cannot be reached in production. **[FILL: if you can see a mainnet tx, verify KYC is enforced there.]**
+**3. Devnet ships KYC disabled.** A devnet order logs `DEVNET: KYC verification bypassed (mock)`. Expected for a testnet — but worth one sentence: confirm on mainnet that the bypass is strictly compile-gated to devnet and cannot be reached in production. **[open — needs team clarification]** confirm on mainnet that the mock is compile-gated to devnet builds and unreachable in production.
 
 **4. The program's own instruction names confirm it.** Decoding the on-chain flow, the KYC/compliance path is: `CreateIdentityForUser` → `SetVerified` (KYC program `SKYC…`) → `PlaceBuyOrder` → **`AdminThaw`** → **`FulfillBuyOrderFreezeGated`** / **`MintFreezeGated`** → `MintTo`. The instructions are literally named *FreezeGated* and *AdminThaw* — freeze/thaw gating, not a transfer hook. And Solana's runtime itself emits, on the token account: *"Warning: Mint has a permanent delegate, so tokens in this account may be seized at any time."* That warning is on-chain, not my editorializing.
 
@@ -195,7 +195,7 @@ Two Spout docs give **different numbers** for the first-loss buffer:
 - `insurance-fund`: *"seeded at launch… target level of 2% of total pool value. At a $10m pool, that target is $200,000."*
 - `loss-waterfall`: *"Seeded at launch (**$50k to $100k**)."*
 
-So the protocol's own first-loss capital at launch is **$50–100k**, targeting **$200k (2%)** — against a pool the same docs size at $10m. That's a 1–2% buffer standing in front of lender capital. It may well cover an *average* bad week; it is not sized for the correlated tail in Part 4. Also worth flagging the doc inconsistency itself as a factual bug. **[FILL: what does the live app show for insurance-fund balance/target — test 4.5?]**
+So the protocol's own first-loss capital at launch is **$50–100k**, targeting **$200k (2%)** — against a pool the same docs size at $10m. That's a 1–2% buffer standing in front of lender capital. It may well cover an *average* bad week; it is not sized for the correlated tail in Part 4. Also worth flagging the doc inconsistency itself as a factual bug. The beta surfaces Proof of Reserves inline ("Reserves 100.2%") but does not surface the insurance fund's current balance or target anywhere in the app — **[open — needs team clarification]** what is the seeded balance today?
 
 ---
 
@@ -220,13 +220,13 @@ The price feed is **Stork** (Stork Labs prices the tokenized equities as collate
 
 ## Part 7 — Liquidation depends on a permissioned buyer set
 
-spAssets enforce wallet-level KYC via a Token-2022 transfer hook — *"Tokens cannot move to non-verified wallets."* That's what makes the regulated model possible, but it has a liquidation cost: **liquidators must themselves be KYC'd**. A permissioned liquidator set is a *thinner* liquidator set, and thin liquidation depth is most dangerous exactly when you need a fast fire-sale in a drawdown. **[FILL: test 5.2 / 3.5 — who can liquidate, and does the hook actually block a non-KYC transfer?]**
+spAssets enforce wallet-level KYC via a Token-2022 transfer hook — *"Tokens cannot move to non-verified wallets."* That's what makes the regulated model possible, but it has a liquidation cost: **liquidators must themselves be KYC'd**. A permissioned liquidator set is a *thinner* liquidator set, and thin liquidation depth is most dangerous exactly when you need a fast fire-sale in a drawdown. **[open — needs team clarification]** who is in the liquidator set today, and what does depth look like at 2× normal volatility?
 
 ---
 
 ## Part 8 — Smaller structural notes
 
-- **Liquidity mismatch / run risk:** Junior has a 45-day notice; Senior exits via a FIFO queue dependent on repayments. Long-dated option-cycle carry funding shorter liquidity expectations is a classic mismatch — honest of them to name it, worth stress-testing the messaging. **[FILL: test 4.3/4.4]**
+- **Liquidity mismatch / run risk:** Junior has a 45-day notice; Senior exits via a FIFO queue dependent on repayments. Long-dated option-cycle carry funding shorter liquidity expectations is a classic mismatch — honest of them to name it, worth stress-testing the messaging. **[open — Earn is marked "coming soon" in the beta, so the lend-side flows are untestable today.]**
 - **Counterparty concentration:** a single regulated US broker holds all the shares and runs options execution; SIPC protection caps at $500k against a multi-million pool. Single point of failure worth naming.
 - **"Audited" but unnamed.** The `risks-disclaimers` page states *"the protocol has been audited,"* but the `security-and-compliance` page names **no audit firm, no report link, and no date**, and there is **no public bug-bounty program** (security contact is the general `contact@spout.finance`). For a protocol custodying tokenized equities pre-launch, an unspecified audit is a transparency gap — "audited by whom, when, what scope, and can I read it?" is a fair question to put in writing.
 - **FinCEN MSB ≠ securities clearance:** Spout is careful to say MSB registration "is not an endorsement." Fair. But tokenized US equities + lending sit in live securities/regulatory uncertainty; that's the largest un-hedgeable risk and belongs higher than the bottom of a risk page.
@@ -235,18 +235,18 @@ spAssets enforce wallet-level KYC via a Token-2022 transfer hook — *"Tokens ca
 
 ## Part 9 — UX audit (Nielsen's 10 heuristics)
 
-Structured heuristic evaluation of the Spout beta, marketing site, and docs. Severity scale: **4 Catastrophic · 3 Major · 2 Minor · 1 Cosmetic.** Items marked **[screenshot]** are assessed from the in-app flow — attach the capture from your testing session. Everything else is verified from the public surface + on-chain behavior.
+Structured heuristic evaluation of the Spout beta, marketing site, and docs. Severity scale: **4 Catastrophic · 3 Major · 2 Minor · 1 Cosmetic.** UI claims are verified against live app state (captures in [`../screenshots/`](../screenshots/)); API and chain claims are verified against the live endpoints and devnet.
 
 **Top 3 UX issues**
 1. Covered-call **assignment isn't disclosed at borrow time** — the product's biggest surprise is its least-visible fact. *(H5/H1, Sev 4)*
 2. **"0% interest" and "never a taxable sale" set a false mental model** the mechanics don't honor. *(H2, Sev 3)*
-3. **Risk asymmetry (Junior first-loss, 45-day lockup) surfaced after interest, not before commitment.** *(H1/H5, Sev 3)* **[screenshot]**
+3. **Risk asymmetry (Junior first-loss, 45-day lockup) surfaced after interest, not before commitment.** *(H1/H5, Sev 3)* — verified in the docs and lend-side copy; Earn isn't live yet, so this lands at launch.
 
 ---
 
 **H1 · Visibility of system status** — ⭐⭐⚪⚪⚪
-- **1.1 (Sev 4) — Assignment/covered-call status is invisible at decision time.** A borrower can't see, on the borrow screen, that their collateral is being continuously covered-called and can be sold at the strike this cycle. The one status that changes the outcome is the one not shown. *Fix: a per-position "cycle status / assignment risk" indicator.* **[screenshot: borrow + position screens]**
-- **1.2 (Sev 3) — Health Factor legibility.** HF is surfaced (good), but is the liquidation threshold, current buffer, and "what price triggers liquidation" shown numerically, or just a colored bar? *Fix: show the trigger price and buffer in plain numbers.* **[screenshot]**
+- **1.1 (Sev 4) — Assignment/covered-call status is invisible at decision time.** A borrower can't see, on the borrow screen, that their collateral is being continuously covered-called and can be sold at the strike this cycle. The one status that changes the outcome is the one not shown. *Fix: a per-position "cycle status / assignment risk" indicator.* (verified: neither the borrow screen nor settings surfaces assignment state — capture `../screenshots/borrow-page.png`)
+- **1.2 (Sev 3) — Health Factor legibility.** HF is surfaced as a labeled element on Borrow (good), but before a vault exists it renders as "—", and the numeric liquidation trigger/buffer isn't shown even then. *Fix: show trigger price and buffer in plain numbers, including a worked preview at the chosen LTV.* (capture: `../screenshots/borrow-page.png`)
 - **1.3 (Sev 3) — No degraded-state signaling.** Verified: while all oracles were >2 days stale, the buy preflight returned `blockers: []` — the app happily builds and requests a signature on a transaction that *cannot* succeed. There is no "markets closed / pricing unavailable" state. The borrow side does this correctly (see 5.2) — the trade side doesn't. *Fix: surface oracle staleness as a first-class UI state before any signing request.*
 
 **H2 · Match between system and the real world** — ⭐⭐⚪⚪⚪
@@ -254,38 +254,38 @@ Structured heuristic evaluation of the Spout beta, marketing site, and docs. Sev
 - **2.2 (Sev 3) — "No margin calls" is contradicted by the mechanics.** Verified in-app: the Borrow page sells "No interest, no margin calls, no hidden fees" while the vault enforces a 65–70% liquidation ratio with `liquidating`/`liquidationPrice` machinery. Automated liquidation *is* a margin call — the difference is you don't get warned first. *Fix: "no manual margin calls" if that's the intent, plus the liquidation threshold in the same sentence.*
 - **2.3 (Sev 2) — "0% interest" hides a real cost.** True to the letter, but the cost (capped upside + assignment) is moved off the interest line where users look for it. *Fix: a "what you give up" line next to "0%."*
 
-**H3 · User control and freedom** — [screenshot]
-- **3.1 (Sev 3) — `autoBuyback` is a per-vault on-chain setting.** Verified: the vault API exposes an `autoBuyback` flag ("lets the vault repurchase your collateral automatically after a liquidation") — the Auto-Roll mechanic lives here. Default could not be checked (vault init is blocked behind a token purchase), but it must be presented at borrow time with an opt-out, not buried post-liquidation. **[screenshot when vault opens]**
-- **3.2 (Sev 2) — Can a user exit/repay cleanly mid-cycle, and is that path obvious?** **[screenshot]**
+**H3 · User control and freedom**
+- **3.1 (Sev 3) — `autoBuyback` is a per-vault on-chain setting.** Verified: the vault API exposes an `autoBuyback` flag ("lets the vault repurchase your collateral automatically after a liquidation") — the Auto-Roll mechanic lives here. Default could not be checked (vault init is blocked behind a token purchase), but it must be presented at borrow time with an opt-out, not buried post-liquidation. **[open — vault init is gated behind a delivered token purchase, so the default could not be observed]**
+- **3.2 (Sev 2) — Exit path clarity.** Repay/withdraw preflights return precise plain-language blockers via the API, but the full closure path (and any cycle-timing constraints) can't be seen without first opening a position.
 
-**H4 · Consistency and standards** — [screenshot]
+**H4 · Consistency and standards**
 - **4.1 (Sev 2) — Docs vs product terminology.** Docs say "transfer hook" for KYC; the chain uses freeze-gating (Part 2.7). If the app repeats "transfer hook," it's inconsistent with its own behavior. Numbers also disagree across docs (insurance fund $50–100k vs $200k, Part 5). *Fix: one source of truth.*
 - **4.2 (Sev 2) — Surface disagreements, verified in-app:** the trade UI lists 11 instruments incl. AAPL while `/api/market-data/instruments` returns 10 (no AAPL); the Portfolio page shows "Unrealized P&L +$0.60 (+6.04%)" with zero holdings; every instrument row renders the Pfizer logo regardless of ticker. Small things, but they erode the precision a trading UI lives on. *(screenshots in `screenshots/`)*
 
 **H5 · Error prevention** — ⭐⭐⚪⚪⚪
-- **5.1 (Sev 4) — No pre-commit warning of assignment/tax consequence.** The highest-consequence, least-reversible outcome (forced sale of your stock) has no confirmation step framing it. *Fix: a one-time "you understand assignment can sell your shares" acknowledgment.* **[screenshot]**
+- **5.1 (Sev 4) — No pre-commit warning of assignment/tax consequence.** The highest-consequence, least-reversible outcome (forced sale of your stock) has no confirmation step framing it — verified across buy, borrow, confirm, and settings. *Fix: a one-time "you understand assignment can sell your shares" acknowledgment.*
 - **5.2 (Positive + Sev 3 asymmetry) — Borrow preflight is genuinely good; buy preflight is missing checks.** Verified: the vault endpoint returns `maxBorrow`, `maxWithdraw`, `currentLtv`, `healthUtilization`, `liquidationRatio`, `priceStale`, and plain-language blockers ("Deposit AAPL as collateral first — that opens your vault", "The AAPL price is 188610s old…"). Excellent error prevention. But `/api/orders/buy` returned `blockers: []` for a tx that reverts `OraclePriceStale` on simulation — the same staleness check is simply absent on the trade path. *Fix: share the preflight layer between trade and vault.*
 - **5.3 (Sev 3) — Frozen-account failure UX.** A non-KYC'd wallet's transfer fails with `custom program error: 0x11` (verified on-chain). If that raw error reaches users, it's un-actionable. *Fix: translate to "this wallet isn't verified yet."* (→ also H9)
 
-**H6 · Recognition rather than recall** — [screenshot]
-- **6.1 (Positive) — Vault blocker copy is a model for the rest of the app.** Verified plain-language reasons for every blocked action, including severity and remedy. If the trade flow and error surfaces matched this standard, most of this section's issues shrink. **[screenshot]**
+**H6 · Recognition rather than recall**
+- **6.1 (Positive) — Vault blocker copy is a model for the rest of the app.** Verified plain-language reasons for every blocked action, including severity and remedy ("The GLD price is 188,610s old — borrow and withdraw revert until a keeper pushes a fresh price"). If the trade flow and error surfaces matched this standard, most of this section's issues shrink.
 
-**H7 · Flexibility and efficiency** — [screenshot]
-- **7.1 (Sev 1) — Power-user affordances** (max button, keyboard entry, position shortcuts). **[screenshot]**
+**H7 · Flexibility and efficiency**
+- **7.1 (Sev 1) — Power-user affordances** — a "max" affordance exists via the LTV slider cap; keyboard/quick-entry polish gaps remain.
 
-**H8 · Aesthetic and minimalist design** — [screenshot]
-- **8.1 (Sev 1–2) — Density/hierarchy of the borrow and lend dashboards; is the primary action obvious?** **[screenshot]**
+**H8 · Aesthetic and minimalist design**
+- **8.1 (Sev 1–2) — Dashboard hierarchy** — the borrow page's primary action is legible in the empty state (capture: `../screenshots/borrow-page.png`); re-check density once positions exist.
 
 **H9 · Help users recognize, diagnose, recover from errors** — ⭐⭐⚪⚪⚪
 - **9.1 (Sev 3) — On-chain errors are raw. Verified.** A signed buy reverted with `custom program error: 0x177d`; the API passes the simulation failure text through to the client unmapped. Nothing tells the user "prices are stale, try again when US markets open." *Fix: an error-map layer — 0x177d → "market pricing is stale," 0x11 → "wallet not verified."*
 
 **H10 · Help and documentation** — ⭐⭐⭐⭐⚪
 - **10.1 (Positive) — Docs are genuinely strong** — thorough, honest about the risk waterfall, and the reason this teardown is even possible. Credit them.
-- **10.2 (Sev 2) — Help isn't contextual.** The docs are excellent but separate; the *app* needs inline "learn more" at the moments of decision (assignment, Health Factor, tranche choice), not a docs link. **[screenshot]**
+- **10.2 (Sev 2) — Help isn't contextual.** The docs are excellent but separate; the *app* needs inline "learn more" at the moments of decision (assignment, Health Factor, tranche choice), not a docs link.
 
 **Overall usability: ~5/10.** Updated from provisional after executed-flow testing: the vault preflight layer is a genuine strength (plain-language blockers, full risk params), but the trade path signs transactions that cannot succeed and surfaces raw Anchor errors. Strong docs and a surfaced Health Factor; undermined by the core disclosure gap (assignment/tax) at exactly the decision points. The single highest-leverage fix is making covered-call assignment and its tax consequence visible *before* the user borrows.
 
-> Companion methods available (installed): a **cognitive walkthrough** of the borrow task and a **WCAG 2.2** accessibility pass — run both against your screenshots to round out the UX section.
+> Companion method included: a novice-persona **cognitive walkthrough** of the buy→borrow task ([`cognitive-walkthrough.md`](cognitive-walkthrough.md)).
 
 ---
 
@@ -345,7 +345,7 @@ Verified during the 2026-09-21 pass (full evidence in `spout-retest-2026-09-21.m
 
 ---
 
-## What Spout gets right (be fair — sponsors reward this)
+## What Spout gets right
 
 - The risk waterfall is disclosed plainly, with a real first-loss-from-day-one insurance fund.
 - Skipping earnings cycles shows genuine options discipline.
@@ -358,4 +358,4 @@ The engine is real; the risk is mostly where a sophisticated user would expect (
 
 ---
 
-*Submitted for the Spout Finance Product Feedback bounty. Independent testing; not investment advice. [add your handle + published-content link]*
+*Submitted for the Spout Finance Product Feedback bounty by [@lpsmurf](https://github.com/lpsmurf). Independent testing; not investment advice.*
