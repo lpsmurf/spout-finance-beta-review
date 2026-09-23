@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spout Finance Beta Review — Control Room</title>
+<style>
+:root{--bg:#0b0d12;--panel:#12151d;--line:#222836;--txt:#e8eaf0;--mut:#8b93a7;--red:#ff5f57;--org:#ffb224;--blu:#4c8dff;--grn:#32d583;--acc:#6ea8ff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font:15px/1.6 -apple-system,"SF Pro Text",system-ui,sans-serif;padding:32px 18px 80px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+.wrap{max-width:1080px;margin:0 auto}
+.mono{font-family:"SF Mono",ui-monospace,Menlo,monospace}
+header h1{font-size:26px;letter-spacing:-.02em}
+header p{color:var(--mut);margin-top:6px;max-width:760px}
+.links{margin-top:14px;display:flex;gap:14px;flex-wrap:wrap}
+.links a{border:1px solid var(--line);background:var(--panel);padding:7px 14px;border-radius:999px;font-size:13px}
+section{margin-top:44px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--mut);margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.kpi b{display:block;font-size:26px}
+.kpi span{color:var(--mut);font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--mut);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.08em;padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.p0{background:rgba(255,95,87,.14);color:var(--red)}
+.med{background:rgba(255,178,36,.13);color:var(--org)}
+.low{background:rgba(76,141,255,.13);color:var(--blu)}
+.good{background:rgba(50,213,131,.12);color:var(--grn)}
+.open{color:var(--org)}
+.closed{color:var(--grn)}
+.tl{border-left:2px solid var(--line);margin-left:6px;padding-left:22px;display:grid;gap:18px}
+.tl div{position:relative}
+.tl div::before{content:"";position:absolute;left:-28px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--acc)}
+.tl time{color:var(--mut);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.tl p{margin-top:2px;color:#cdd2de}
+code{background:#191e2a;padding:1px 6px;border-radius:6px;font-size:12.5px}
+footer{margin-top:56px;color:var(--mut);font-size:12.5px}
+.stat{font-size:12px;padding:2px 8px;border-radius:6px;background:#191e2a;border:1px solid var(--line);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Spout Finance — Beta Review Control Room</h1>
+  <p>Independent product &amp; security review of <code>beta.spout.finance</code> (Solana devnet), 2026-09-19 → 09-23.
+     Signed-transaction evidence throughout. Product-feedback submission for the Superteam Earn bounty.</p>
+  <div class="links">
+    <a href="https://github.com/lpsmurf/spout-finance-beta-review">GitHub repo</a>
+    <a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/ARTICLE.md">Article</a>
+    <a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/report/teardown.md">Full teardown</a>
+    <a href="https://github.com/lpsmurf/spout-finance-beta-review/blob/main/report/cognitive-walkthrough.md">UX walkthrough</a>
+    <a href="https://github.com/lpsmurf/spout-finance-beta-review/tree/main/screenshots">Screenshots</a>
+  </div>
+</header>
+
+<section>
+  <h2>At a glance</h2>
+  <div class="kpis">
+    <div class="kpi"><b>4d</b><span>testing window</span></div>
+    <div class="kpi"><b>4</b><span>signed devnet txs</span></div>
+    <div class="kpi"><b>~53h</b><span>oracle-keeper outage observed</span></div>
+    <div class="kpi"><b>18h+</b><span>confirmed order, never filled</span></div>
+    <div class="kpi"><b>9</b><span>medium-severity findings</span></div>
+    <div class="kpi"><b>0</b><span>funds-reachable issues</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Timeline</h2>
+  <div class="tl">
+    <div><time>Sep 19–20</time><p>Docs + public-surface analysis; claims-vs-mechanics review; on-chain program map (<code>SPoRX</code> orders, <code>spva</code> vault, freeze router, TACL).</p></div>
+    <div><time>Sep 21</time><p>All 10 oracle feeds 52h+ stale. Three Phantom-signed buy txs revert <code>OraclePriceStale (6013)</code> — including one signed while the UI showed "Market: Open". Keeper-down confirmed; every user path bricked.</p></div>
+    <div><time>Sep 22</time><p>Keeper recovers (feeds 49–274s fresh). Real $4 USDC → GOOG buy through production UI confirms on-chain (<code>PlaceBuyOrder</code>, price 353.314). Tokens never delivered; pending-order backlog 145 → 268. Extended probe matrix: limit-price footgun, no rate limiting, <code>/api/kyc/onboard</code> live + unauthenticated.</p></div>
+    <div><time>Sep 23</time><p>Delta audit (order still pending), proofread &amp; published submission repo.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Findings — reliability &amp; API surface</h2>
+  <div class="card"><table>
+    <tr><th style="width:64px">Sev</th><th>Finding</th><th style="width:130px">Status</th></tr>
+    <tr><td><span class="pill p0">P0</span></td><td><b>Silent keeper outage bricked every flow for ~53h.</b> Signed buys reverted <code>OraclePriceStale</code>; borrow/withdraw hard-blocked; "Market: Open" banner is client-side and cannot reflect chain state. Resolved 09-22 — reads as ops failure, not a market-hours guard.</td><td><span class="open">open · monitoring fix needed</span></td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b>Fulfillment never delivered.</b> On-chain-confirmed $4 GOOG buy pending 18h+; USDC escrowed; no status, no ETA, cancel costs <code>0.004 USDC</code>; backlog grew 145 → 268 in a day.</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b><code>limitPrice</code> accepted at absurd values silently</b> — $1 limit on a $353 asset passes preflight with zero warnings; locks funds into an unfillable order with a fee to exit.</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b>No rate limiting.</b> 15 rapid tx-build calls all 200 (each burns RPC quota); <code>redeem_beta_code</code> identical — 8-char codes brute-forceable.</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b><code>/api/kyc/onboard</code> live and unauthenticated</b> — KYC-status oracle for arbitrary wallets (defeats the Privy gate on <code>/api/kyc/status</code>); likely burns Persona inquiries for non-onboarded addresses.</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b><code>/api/orders</code> is a global feed</b> — <code>userAddress</code> ignored; 268 pending orders across 52 wallets readable by anyone (address, side, amount, price, ts).</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b>Per-wallet state disclosure</b> — vault preflight returns <code>kycStatus</code> for arbitrary wallets; <code>orders/buy</code> builds full unsigned txs for arbitrary addresses (identity account, ATA, link state).</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b>Beta passcode gate is UI-only</b> — no API route enforces it; creds sit in <code>localStorage</code>.</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill low">LOW</span></td><td>No HSTS on beta (main site has it); no <code>security.txt</code>; Anchor errors leak source paths.</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill low">LOW</span></td><td>AAPL tradable on-chain but absent from instruments API; collateral mints deploy as SPL Token on devnet vs Token-2022 in docs; <code>access_count</code> RPC leaks signup count (258).</td><td><span class="open">open</span></td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Findings — product &amp; mechanism</h2>
+  <div class="card"><table>
+    <tr><th style="width:64px">Sev</th><th>Finding</th><th style="width:130px">Status</th></tr>
+    <tr><td><span class="pill p0">KEY</span></td><td><b>"Never trigger a taxable sale" contradicts the assignment mechanic.</b> Docs: ITM calls sell your shares at strike → taxable event; Auto-Roll rebuys as a new tax lot. Assignment disclosed nowhere in buy/borrow/confirm/settings.</td><td>by design · fix the story</td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b>Lender yield is a levered short-vol position.</b> ~32% Junior APY rests on a healthy-vol premium assumption; thin insurance fund ($50–100k seed vs $200k target — docs disagree) in front of Senior.</td><td>analysis</td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b>Market-hours oracle gap</b> — 9:30–4 ET pricing vs 24/7 liquidation engine; observed live as a weekend-long outage.</td><td><span class="open">needs documentation</span></td></tr>
+    <tr><td><span class="pill med">MED</span></td><td><b>Leverage slider = invisible loan</b> — 1.0–2.0x performs a borrow without saying "borrow" or "debt"; Health Factor absent at the leverage decision point. "No margin calls" sits above a liquidation engine.</td><td><span class="open">open</span></td></tr>
+    <tr><td><span class="pill low">LOW</span></td><td>Permissioned (KYC'd) liquidator set — thinner liquidation depth; unnamed auditor, no bug-bounty; FinCEN MSB ≠ securities clearance; single-broker concentration.</td><td>analysis</td></tr>
+    <tr><td><span class="pill low">LOW</span></td><td>Polish: empty portfolio shows phantom P&amp;L (+$0.60); all instrument logos render as Pfizer; <code>autoBuyback</code> toggle unreachable pre-position.</td><td><span class="open">open</span></td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Verified good</h2>
+  <div class="card"><table>
+    <tr><th>Control</th><th>Evidence</th></tr>
+    <tr><td><span class="pill good">PASS</span> <b>Signature boundary holds</b></td><td><code>/api/orders/submit</code> simulates before relaying; nothing funds-reachable found</td></tr>
+    <tr><td><span class="pill good">PASS</span> <b>Cancel ownership check</b></td><td>server refuses to build cancel txs for foreign orders</td></tr>
+    <tr><td><span class="pill good">PASS</span> <b>Input validation</b></td><td>negatives, bad tickers (helpful allowlist message), malformed wallets, insufficient balance — all rejected cleanly</td></tr>
+    <tr><td><span class="pill good">PASS</span> <b>Supabase RLS</b></td><td>every probed table 401/404 to the anon key</td></tr>
+    <tr><td><span class="pill good">PASS</span> <b>Security headers</b></td><td>tight CSP with connect-src allowlist, XFO DENY, nosniff, referrer-policy</td></tr>
+    <tr><td><span class="pill good">PASS</span> <b>Vault blocker copy</b></td><td>plain-language reasons + remedies for every blocked action — the standard the trade path should meet</td></tr>
+    <tr><td><span class="pill good">PASS</span> <b>Proof of reserves inline</b></td><td>"Reserves 100.2%" at the point of purchase; HF label on Borrow; email verification enforced</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>On-chain evidence</h2>
+  <div class="card"><table>
+    <tr><th>What</th><th>Where</th></tr>
+    <tr><td>3× signed buys reverted <code>OraclePriceStale (6013)</code> at <code>oracle.rs:47</code></td><td class="mono" style="font-size:12px">2026-09-21 · devnet, independent simulation confirmed</td></tr>
+    <tr><td>$4 USDC → GOOG, <code>PlaceBuyOrder</code> success, Stork price 353.314</td><td class="mono" style="font-size:12px"><code>4LcegboMhAbr1rQphiU8bY8DRywj6CchB35KU7rQTWL4qMq3wot4aw8TwbsiJdJq4JEKvsCqJxCR2n85BbN2LXhY</code> · slot 502391046</td></tr>
+    <tr><td>Order escrow account alive 18h+, tokens undelivered</td><td class="mono" style="font-size:12px"><code>6s9tiW4RczPUWvwxjDyKg3TAiMhUqGwkoswF4RumXt85</code> (owner: orders program)</td></tr>
+    <tr><td>Program log: <code>DEVNET: KYC verification bypassed (mock)</code></td><td>present in every PlaceBuyOrder trace — unverifiable until mainnet</td></tr>
+    <tr><td>Mainnet-readiness: single-key upgrade authority on the TACL program</td><td>disclosed to the team privately; framed as please-confirm</td></tr>
+  </table></div>
+</section>
+
+<footer>
+  Reviewer wallet <code class="mono">GfcpRxboaev5cHDLUR86t1Bh5c5TtGGCP2pQFQKf9KGv</code> (devnet) ·
+  full methodology + logs in the <a href="https://github.com/lpsmurf/spout-finance-beta-review">repo</a> ·
+  independent testing, not investment advice.
+</footer>
+
+</div>
+</body>
+</html>
